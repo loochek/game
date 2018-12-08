@@ -2,6 +2,7 @@
 
 std::map<std::string, sf::Texture*> ResourceManager::textureBank = { { "init", nullptr } };
 std::map<std::string, Animation*> ResourceManager::animationBank = { { "init", nullptr } };
+std::map<std::string, TiledMap*> ResourceManager::mapBank = { { "init", nullptr } };
 
 void ResourceManager::load()
 {
@@ -36,14 +37,54 @@ void ResourceManager::load()
 		anim->setSpriteSheet(*textureBank[spritesheetName]);
 		for (int i = 0; i < framesCount; i++)
 		{
-			int x, y, w, h;
-			animFile >> x >> y >> w >> h;
-			anim->addFrame(sf::IntRect(x, y, w, h));
+			int x, y, width, height;
+			animFile >> x >> y >> width >> height;
+			anim->addFrame(sf::IntRect(x, y, width, height));
 		}
 		animationBank[animName] = anim;
 		animFile.close();
 	}
 	animIndex.close();
+	std::ifstream mapIndex("resources/maps.idx");
+	std::string mapName;
+	while (mapIndex >> mapName)
+	{
+		std::cout << "maps/" + mapName << "\n";
+		std::ifstream mapFile("resources/maps/" + mapName + ".map");
+		int width, height, tilesCount;
+		std::string tilesheetName;
+		mapFile >> width >> height >> tilesheetName >> tilesCount;
+		TiledMap *map = new TiledMap(width, height);
+		if (textureBank.find(tilesheetName) == textureBank.end())
+		{
+			std::cout << "Warning! Texture " << tilesheetName << " not found\n";
+		}
+		else
+		{
+			map->setTilesheet(getTexture(tilesheetName));
+		}
+		std::vector<std::vector<int>> *mapArray = map->getMap();
+		mapArray->resize(height);
+		for (int i = 0; i < height; i++)
+		{
+			(*mapArray)[i].resize(width);
+			for (int j = 0; j < width; j++)
+			{
+				mapFile >> (*mapArray)[i][j];
+			}
+		}
+		std::vector<sf::IntRect> *tilesArray = map->getTiles();
+		tilesArray->resize(tilesCount);
+		for (int i = 0; i < tilesCount; i++)
+		{
+			int tx, ty, tw, th;
+			mapFile >> tx >> ty >> tw >> th;
+			(*tilesArray)[i] = sf::IntRect(tx, ty, tw, th);
+		}
+		mapBank[mapName] = map;
+		mapFile.close();
+	}
+	mapIndex.close();
 	std::cout << "Resources loading complete\n";
 }
 
@@ -58,6 +99,10 @@ void ResourceManager::unload()
 	{
 		delete i.second;
 	}
+	for (auto i : mapBank)
+	{
+		delete i.second;
+	}
 	std::cout << "OK\n";
 }
 
@@ -66,7 +111,12 @@ sf::Texture* ResourceManager::getTexture(std::string name)
 	return textureBank[name];
 }
 
-Animation * ResourceManager::getAnimation(std::string name)
+Animation* ResourceManager::getAnimation(std::string name)
 {
 	return animationBank[name];
+}
+
+TiledMap* ResourceManager::getMap(std::string name)
+{
+	return mapBank[name];
 }
