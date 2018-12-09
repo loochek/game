@@ -25,8 +25,10 @@ int Game::run()
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
 			window.close();
 
+		if (frameTime.asMilliseconds() > 16)
+			frameTime = sf::milliseconds(16);
 		getCurrentState()->update(frameTime);
-		window.clear();
+		window.clear(sf::Color::Blue);
 		getCurrentState()->draw();
 		window.display();
 	}

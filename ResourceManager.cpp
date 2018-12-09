@@ -15,7 +15,7 @@ void ResourceManager::load()
 		sf::Image img;
 		sf::Texture *tx = new sf::Texture();
 		img.loadFromFile("resources/textures/" + textureName + ".png");
-		img.createMaskFromColor(sf::Color(233, 54, 224));
+		img.createMaskFromColor(sf::Color(147, 187, 236));
 		tx->loadFromImage(img);
 		textureBank[textureName] = tx;
 	}

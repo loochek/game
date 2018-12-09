@@ -14,6 +14,12 @@ public:
 	std::vector<sf::IntRect> *getTiles();
 	void setTilesheet(sf::Texture *tilesheet);
 
+	sf::Vector2i getMapTileAtPoint(sf::Vector2f point);
+	int getMapTileXAtPoint(float x);
+	int getMapTileYAtPoint(float y);
+	bool isGround(int x, int y);
+	bool isEmpty(int x, int y);
+
 private:
 	int width;
 	int height;
