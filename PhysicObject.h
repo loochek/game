@@ -17,23 +17,7 @@ public:
 	sf::Vector2f oldSpeed;
 	sf::Vector2f speed;
 
-	bool pushedRightWall;
-	bool pushesRightWall;
-
-	bool pushedLeftWall;
-	bool pushesLeftWall;
-
-	bool wasOnGround;
-	bool onGround;
-
-	bool wasAtCeiling;
-	bool atCeiling;
-
 	TiledMap *map;
 
 	void updatePhysics(sf::Time delta);
-	std::pair<bool, float> hasGround();
-	std::pair<bool, float> hasCeiling();
-	std::pair<bool, float> hasLeftWall();
-	std::pair<bool, float> hasRightWall();
 };
