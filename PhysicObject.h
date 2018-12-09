@@ -33,4 +33,7 @@ public:
 
 	void updatePhysics(sf::Time delta);
 	std::pair<bool, float> hasGround();
+	std::pair<bool, float> hasCeiling();
+	std::pair<bool, float> hasLeftWall();
+	std::pair<bool, float> hasRightWall();
 };

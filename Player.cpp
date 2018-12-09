@@ -101,7 +101,6 @@ void Player::update(sf::Time delta)
 		break;
 	}
 	};
-	sf::Vector2i pos = map->getMapTileAtPoint(sf::Vector2f(position.x, position.y + 17));
 	updatePhysics(delta);
 	for (int i = 0; i < 4; i++)
 		prevInputs[i] = inputs[i];
