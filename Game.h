@@ -5,6 +5,7 @@
 #include "PlayState.h"
 #include "BaseState.h"
 #include "ResourceManager.h"
+#include "ServerState.h"
 
 class Game
 {

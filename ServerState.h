@@ -2,16 +2,16 @@
 
 #include "BaseState.h"
 #include "ResourceManager.h"
-#include "PlayerClient.h"
+#include "PlayerServer.h"
 #include "TiledMap.h"
 
-class PlayState : public BaseState
+class ServerState : public BaseState
 {
 public:
-	PlayState(Game *game);
-	~PlayState();
+	ServerState(Game *game);
+	~ServerState();
 	void update(sf::Time frameTime);
 	void draw();
-	PlayerClient player = 0;
+	PlayerServer player = 0;
 	TiledMap *map;
 };

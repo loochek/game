@@ -5,7 +5,7 @@ PlayState::PlayState(Game* game) : BaseState(game)
 {
 	std::cout << "PlayState()\n";
 	map = ResourceManager::getMap("test");
-	player = Player(map);
+	player = PlayerClient(map);
 }
 
 PlayState::~PlayState()

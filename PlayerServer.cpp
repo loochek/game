@@ -1,6 +1,6 @@
-#include "Player.h"
+#include "PlayerServer.h"
 
-Player::Player(TiledMap *map) : PhysicObject(map)
+PlayerServer::PlayerServer(TiledMap *map) : PhysicObject(map)
 {
 	position = sf::Vector2f(0, 0);
 	shape.setSize(sf::Vector2f(16, 32));
@@ -8,13 +8,14 @@ Player::Player(TiledMap *map) : PhysicObject(map)
 	shape.setOrigin(8, 16);
 	speed = sf::Vector2f(0, 0);
 	onGround = false;
+	socket = new sf::UdpSocket();
 }
 
-Player::~Player()
+PlayerServer::~PlayerServer()
 {
 }
 
-void Player::update(sf::Time delta)
+void PlayerServer::update(sf::Time delta)
 {
 	inputs[0] = sf::Keyboard::isKeyPressed(sf::Keyboard::W);
 	inputs[1] = sf::Keyboard::isKeyPressed(sf::Keyboard::A);
@@ -109,12 +110,19 @@ void Player::update(sf::Time delta)
 	pushedRightWall = pushesRightWall;
 	pushedLeftWall = pushesLeftWall;
 	wasAtCeiling = atCeiling;
+	unsigned char *packet = new unsigned char[16];
+	sf::IpAddress recipient = "192.168.100.7";
+	encodeMessage(position.x, position.y, speed.x, speed.y, packet);
+	if (socket->send(packet, 16, recipient, 12345) != sf::Socket::Done)
+	{
+		std::cout << 'E';
+	}
 	for (int i = 0; i < 4; i++)
 		prevInputs[i] = inputs[i];
 	shape.setPosition(position);
 }
 
-void Player::checkCollisions()
+void PlayerServer::checkCollisions()
 {
 	auto check3 = hasLeftWall();
 	if (speed.x <= 0.0f && check3.first)
@@ -156,7 +164,7 @@ void Player::checkCollisions()
 		atCeiling = false;
 }
 
-bool Player::keyReleased(sf::Keyboard::Key key)
+bool PlayerServer::keyReleased(sf::Keyboard::Key key)
 {
 	if (key == sf::Keyboard::W)
 		return !inputs[0] && prevInputs[0];
@@ -168,7 +176,7 @@ bool Player::keyReleased(sf::Keyboard::Key key)
 		return !inputs[3] && prevInputs[3];
 }
 
-bool Player::keyState(sf::Keyboard::Key key)
+bool PlayerServer::keyState(sf::Keyboard::Key key)
 {
 	if (key == sf::Keyboard::W)
 		return inputs[0];
@@ -180,7 +188,7 @@ bool Player::keyState(sf::Keyboard::Key key)
 		return inputs[3];
 }
 
-bool Player::keyPressed(sf::Keyboard::Key key)
+bool PlayerServer::keyPressed(sf::Keyboard::Key key)
 {
 	if (key == sf::Keyboard::W)
 		return inputs[0] && !prevInputs[0];
@@ -192,7 +200,7 @@ bool Player::keyPressed(sf::Keyboard::Key key)
 		return inputs[3] && !prevInputs[3];
 }
 
-std::pair<bool, float> Player::hasGround()
+std::pair<bool, float> PlayerServer::hasGround()
 {
 	sf::Vector2f bottomLeft = sf::Vector2f(position.x - halfSize.x + 2.f, position.y + halfSize.y + 2.f);
 	sf::Vector2f bottomRight = sf::Vector2f(position.x + halfSize.x - 2.f, position.y + halfSize.y + 2.f);
@@ -210,7 +218,7 @@ std::pair<bool, float> Player::hasGround()
 	return { false, -1 };
 }
 
-std::pair<bool, float> Player::hasCeiling()
+std::pair<bool, float> PlayerServer::hasCeiling()
 {
 	sf::Vector2f topLeft = sf::Vector2f(position.x - halfSize.x + 2.f, position.y - halfSize.y + 2.f);
 	sf::Vector2f topRight = sf::Vector2f(position.x + halfSize.x - 2.f, position.y - halfSize.y + 2.f);
@@ -228,7 +236,7 @@ std::pair<bool, float> Player::hasCeiling()
 	return { false, -1 };
 }
 
-std::pair<bool, float> Player::hasLeftWall()
+std::pair<bool, float> PlayerServer::hasLeftWall()
 {
 	sf::Vector2f topLeft = sf::Vector2f(position.x - halfSize.x - 2.f, position.y - halfSize.y + 2.f);
 	sf::Vector2f bottomLeft = sf::Vector2f(position.x - halfSize.x - 2.f, position.y + halfSize.y + 2.f);
@@ -246,7 +254,7 @@ std::pair<bool, float> Player::hasLeftWall()
 	return { false, -1 };
 }
 
-std::pair<bool, float> Player::hasRightWall()
+std::pair<bool, float> PlayerServer::hasRightWall()
 {
 	sf::Vector2f topRight = sf::Vector2f(position.x + halfSize.x + 2.f, position.y - halfSize.y + 2.f);
 	sf::Vector2f bottomRight = sf::Vector2f(position.x + halfSize.x + 2.f, position.y + halfSize.y + 2.f);
@@ -262,4 +270,56 @@ std::pair<bool, float> Player::hasRightWall()
 			break;
 	}
 	return { false, -1 };
+}
+void PlayerServer::encodeMessage(float positionX, float positionY, float speedX, float speedY, unsigned char *packet)
+{
+	unsigned int asInt = *((int*)&positionX);
+	packet[0] = asInt >> 24;
+	packet[1] = (asInt >> 16) & 255;
+	packet[2] = (asInt >> 8) & 255;
+	packet[3] = asInt & 255;
+	asInt = *((int*)&positionY);
+	packet[4] = asInt >> 24;
+	packet[5] = (asInt >> 16) & 255;
+	packet[6] = (asInt >> 8) & 255;
+	packet[7] = asInt & 255;
+	asInt = *((int*)&speedX);
+	packet[8] = asInt >> 24;
+	packet[9] = (asInt >> 16) & 255;
+	packet[10] = (asInt >> 8) & 255;
+	packet[11] = asInt & 255;
+	asInt = *((int*)&speedY);
+	packet[12] = asInt >> 24;
+	packet[13] = (asInt >> 16) & 255;
+	packet[14] = (asInt >> 8) & 255;
+	packet[15] = asInt & 255;
+}
+
+void decodeMessage(unsigned char *packet, float &positionX, float &positionY, float &speedX, float &speedY)
+{
+	unsigned int asInt = 0;
+	asInt |= (packet[0] << 24);
+	asInt |= (packet[1] << 16);
+	asInt |= (packet[2] << 8);
+	asInt |= (packet[3]);
+	positionX = *((float*)&asInt);
+	asInt = 0;
+	asInt |= (packet[4] << 24);
+	asInt |= (packet[5] << 16);
+	asInt |= (packet[6] << 8);
+	asInt |= (packet[7]);
+	positionY = *((float*)&asInt);
+	asInt = 0;
+	asInt |= (packet[8] << 24);
+	asInt |= (packet[9] << 16);
+	asInt |= (packet[10] << 8);
+	asInt |= (packet[11]);
+	speedX = *((float*)&asInt);
+	asInt = 0;
+	asInt |= (packet[12] << 24);
+	asInt |= (packet[13] << 16);
+	asInt |= (packet[14] << 8);
+	asInt |= (packet[15]);
+	speedY = *((float*)&asInt);
+	return;
 }

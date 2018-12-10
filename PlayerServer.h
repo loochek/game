@@ -1,15 +1,16 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Network.hpp>
 #include <iostream>
 #include "PhysicObject.h"
 #include "TiledMap.h"
 
-class Player : PhysicObject
+class PlayerServer : PhysicObject
 {
 public:
-	Player(TiledMap *map);
-	~Player();
+	PlayerServer(TiledMap *map);
+	~PlayerServer();
 
 	sf::RectangleShape shape;
 
@@ -46,4 +47,7 @@ public:
 	std::pair<bool, float> hasCeiling();
 	std::pair<bool, float> hasLeftWall();
 	std::pair<bool, float> hasRightWall();
+
+	sf::UdpSocket *socket;
+	void encodeMessage(float positionX, float positionY, float speedX, float speedY, unsigned char *packet);
 };

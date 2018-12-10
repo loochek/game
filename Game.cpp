@@ -5,7 +5,12 @@ Game::Game()
 	window.create(sf::VideoMode(1280, 720), "Frostbite 4 Tech Demo", sf::Style::Close);
 	window.setFramerateLimit(60);
 	ResourceManager::load();
-	pushState(new PlayState(this));
+	bool mode;
+	std::cin >> mode;
+	if (mode)
+		pushState(new PlayState(this));
+	else
+		pushState(new ServerState(this));
 }
 
 int Game::run()
