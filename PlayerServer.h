@@ -49,5 +49,4 @@ public:
 	std::pair<bool, float> hasRightWall();
 
 	sf::UdpSocket *socket;
-	void encodeMessage(float positionX, float positionY, float speedX, float speedY, unsigned char *packet);
 };

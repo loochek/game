@@ -110,10 +110,10 @@ void PlayerServer::update(sf::Time delta)
 	pushedRightWall = pushesRightWall;
 	pushedLeftWall = pushesLeftWall;
 	wasAtCeiling = atCeiling;
-	unsigned char *packet = new unsigned char[16];
-	sf::IpAddress recipient = "192.168.100.7";
-	encodeMessage(position.x, position.y, speed.x, speed.y, packet);
-	if (socket->send(packet, 16, recipient, 12345) != sf::Socket::Done)
+	sf::Packet packet;
+	sf::IpAddress recipient = sf::IpAddress::LocalHost;
+	packet << position.x << position.y << speed.x << speed.y;
+	if (socket->send(packet, recipient, 12345) != sf::Socket::Done)
 	{
 		std::cout << 'E';
 	}
@@ -270,56 +270,4 @@ std::pair<bool, float> PlayerServer::hasRightWall()
 			break;
 	}
 	return { false, -1 };
-}
-void PlayerServer::encodeMessage(float positionX, float positionY, float speedX, float speedY, unsigned char *packet)
-{
-	unsigned int asInt = *((int*)&positionX);
-	packet[0] = asInt >> 24;
-	packet[1] = (asInt >> 16) & 255;
-	packet[2] = (asInt >> 8) & 255;
-	packet[3] = asInt & 255;
-	asInt = *((int*)&positionY);
-	packet[4] = asInt >> 24;
-	packet[5] = (asInt >> 16) & 255;
-	packet[6] = (asInt >> 8) & 255;
-	packet[7] = asInt & 255;
-	asInt = *((int*)&speedX);
-	packet[8] = asInt >> 24;
-	packet[9] = (asInt >> 16) & 255;
-	packet[10] = (asInt >> 8) & 255;
-	packet[11] = asInt & 255;
-	asInt = *((int*)&speedY);
-	packet[12] = asInt >> 24;
-	packet[13] = (asInt >> 16) & 255;
-	packet[14] = (asInt >> 8) & 255;
-	packet[15] = asInt & 255;
-}
-
-void decodeMessage(unsigned char *packet, float &positionX, float &positionY, float &speedX, float &speedY)
-{
-	unsigned int asInt = 0;
-	asInt |= (packet[0] << 24);
-	asInt |= (packet[1] << 16);
-	asInt |= (packet[2] << 8);
-	asInt |= (packet[3]);
-	positionX = *((float*)&asInt);
-	asInt = 0;
-	asInt |= (packet[4] << 24);
-	asInt |= (packet[5] << 16);
-	asInt |= (packet[6] << 8);
-	asInt |= (packet[7]);
-	positionY = *((float*)&asInt);
-	asInt = 0;
-	asInt |= (packet[8] << 24);
-	asInt |= (packet[9] << 16);
-	asInt |= (packet[10] << 8);
-	asInt |= (packet[11]);
-	speedX = *((float*)&asInt);
-	asInt = 0;
-	asInt |= (packet[12] << 24);
-	asInt |= (packet[13] << 16);
-	asInt |= (packet[14] << 8);
-	asInt |= (packet[15]);
-	speedY = *((float*)&asInt);
-	return;
 }

@@ -16,8 +16,5 @@ public:
 
 	void update(sf::Time delta);
 
-	void decodeMessage(unsigned char *packet, float &positionX, float &positionY, float &speedX, float &speedY);
-
 	sf::UdpSocket *sock;
-	unsigned char receivedData[16];
 };
