@@ -1,4 +1,3 @@
-playerWalkDown
-playerWalkUp
-playerWalkLeft
-playerWalkRight
+playerWalk
+playerJump
+playerStay

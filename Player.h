@@ -4,18 +4,18 @@
 #include <iostream>
 #include "PhysicObject.h"
 #include "TiledMap.h"
+#include "AnimatedSprite.h"
+#include "ResourceManager.h"
 
-class Player : PhysicObject
+class Player : public PhysicObject, public AnimatedSprite
 {
 public:
 	Player(TiledMap *map);
 	~Player();
 
-	sf::RectangleShape shape;
-
-	float walkSpeed = 360.0f;
-	float jumpSpeed = 610.0f;
-	float gravity = 610.0f;
+	float walkSpeed = 100.0f;
+	float jumpSpeed = 170.0f;
+	float gravity = 100.0f;
 
 	bool pushedRightWall;
 	bool pushesRightWall;
@@ -31,6 +31,8 @@ public:
 
 	enum playerState { stay, walk, jump };
 	playerState currentState = stay;
+
+	bool orientation = 0; // 0-right, 1-left
 
 	bool inputs[4];
 	bool prevInputs[4];

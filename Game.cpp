@@ -27,12 +27,12 @@ int Game::run()
 
 		if (frameTime.asMilliseconds() > 16)
 			frameTime = sf::milliseconds(16);
+
 		getCurrentState()->update(frameTime);
 		window.clear(sf::Color::Blue);
 		getCurrentState()->draw();
 		window.display();
 	}
-	ResourceManager::unload();
 	return 0;
 }
 
@@ -57,4 +57,5 @@ Game::~Game()
 {
 	while (!states.empty())
 		popState();
+	ResourceManager::unload();
 }

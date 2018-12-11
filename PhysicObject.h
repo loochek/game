@@ -1,8 +1,9 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include "TiledMap.h"
 #include <algorithm>
+
+#include "TiledMap.h"
 
 class PhysicObject
 {

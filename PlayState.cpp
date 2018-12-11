@@ -21,5 +21,5 @@ void PlayState::update(sf::Time frameTime)
 void PlayState::draw()
 {
 	map->draw(game->window);
-	game->window.draw(player.shape);
+	game->window.draw(player);
 }

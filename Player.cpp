@@ -2,10 +2,12 @@
 
 Player::Player(TiledMap *map) : PhysicObject(map)
 {
+	scale(-1, 1);
+	setAnimation(*ResourceManager::getAnimation("playerWalk"));
 	position = sf::Vector2f(17, 17);
-	shape.setSize(sf::Vector2f(16, 32));
-	halfSize = sf::Vector2f(8, 16);
-	shape.setOrigin(8, 16);
+	setFrameTime(sf::seconds(0.05));
+	halfSize = sf::Vector2f(getLocalBounds().width / 2.f, getLocalBounds().height / 2.f);
+	setOrigin(halfSize);
 	speed = sf::Vector2f(0, 0);
 	onGround = false;
 }
@@ -24,6 +26,7 @@ void Player::update(sf::Time delta)
 	{
 	case stay:
 	{
+		play(*ResourceManager::getAnimation("playerStay"));
 		speed = sf::Vector2f(0, 0);
 		if (!onGround)
 		{
@@ -32,6 +35,18 @@ void Player::update(sf::Time delta)
 		}
 		if (keyState(sf::Keyboard::A) != keyState(sf::Keyboard::D))
 		{
+			if (keyState(sf::Keyboard::A))
+			{
+				if (!orientation)
+					scale(-1, 1);
+				orientation = 1;
+			}
+			else if (keyState(sf::Keyboard::D))
+			{
+				if (orientation)
+					scale(-1, 1);
+				orientation = 0;
+			}	
 			currentState = walk;
 		}
 		else if (keyState(sf::Keyboard::W))
@@ -43,6 +58,7 @@ void Player::update(sf::Time delta)
 	}
 	case walk:
 	{
+		play(*ResourceManager::getAnimation("playerWalk"));
 		if (keyState(sf::Keyboard::A) == keyState(sf::Keyboard::D))
 		{
 			currentState = stay;
@@ -51,10 +67,16 @@ void Player::update(sf::Time delta)
 		}
 		else if (keyState(sf::Keyboard::D))
 		{
+			if (orientation)
+				scale(-1, 1);
+			orientation = 0;
 			speed.x = walkSpeed;
 		}
 		else if (keyState(sf::Keyboard::A))
 		{
+			if (!orientation)
+				scale(-1, 1);
+			orientation = 1;
 			speed.x = -walkSpeed;
 		}
 		if (keyState(sf::Keyboard::W))
@@ -72,6 +94,7 @@ void Player::update(sf::Time delta)
 	}
 	case jump:
 	{
+		play(*ResourceManager::getAnimation("playerJump"));
 		speed.y += gravity * delta.asSeconds();
 		if (keyState(sf::Keyboard::A) == keyState(sf::Keyboard::D))
 		{
@@ -79,10 +102,16 @@ void Player::update(sf::Time delta)
 		}
 		else if (keyState(sf::Keyboard::D))
 		{
+			if (orientation)
+				scale(-1, 1);
+			orientation = 0;
 			speed.x = walkSpeed;
 		}
 		else if (keyState(sf::Keyboard::A))
 		{
+			if (!orientation)
+				scale(-1, 1);
+			orientation = 1;
 			speed.x = -walkSpeed;
 		}
 		if (onGround)
@@ -111,7 +140,8 @@ void Player::update(sf::Time delta)
 	wasAtCeiling = atCeiling;
 	for (int i = 0; i < 4; i++)
 		prevInputs[i] = inputs[i];
-	shape.setPosition(position);
+	setPosition(position);
+	updateAnimation(delta);
 }
 
 void Player::checkCollisions()
