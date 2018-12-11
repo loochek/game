@@ -14,7 +14,7 @@ void TiledMap::draw(sf::RenderWindow & window)
 		for (int j = 0; j < width; j++)
 			if (map[i][j] != 0)
 			{
-				spr.setPosition(j * 16, i * 16);
+				spr.setPosition(j * 16.f, i * 16.f);
 				spr.setTextureRect(tiles[map[i][j] - 1]);
 				window.draw(spr);
 			}
@@ -37,17 +37,21 @@ void TiledMap::setTilesheet(sf::Texture * tilesheet)
 
 sf::Vector2i TiledMap::getMapTileAtPoint(sf::Vector2f point)
 {
-	return sf::Vector2i(point.x / 16, point.y / 16);
+	return sf::Vector2i(int(point.x / 16), int(point.y / 16));
 }
 
 int TiledMap::getMapTileXAtPoint(float x)
 {
-	return x / 16;
+	if (x < 0)
+		return -1;
+	return int(x / 16);
 }
 
 int TiledMap::getMapTileYAtPoint(float y)
 {
-	return y / 16;
+	if (y < 0)
+		return -1;
+	return int(y / 16);
 }
 
 bool TiledMap::isGround(int x, int y)

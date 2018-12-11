@@ -2,7 +2,7 @@
 
 Player::Player(TiledMap *map) : PhysicObject(map)
 {
-	position = sf::Vector2f(0, 0);
+	position = sf::Vector2f(17, 17);
 	shape.setSize(sf::Vector2f(16, 32));
 	halfSize = sf::Vector2f(8, 16);
 	shape.setOrigin(8, 16);
@@ -166,6 +166,8 @@ bool Player::keyReleased(sf::Keyboard::Key key)
 		return !inputs[2] && prevInputs[2];
 	else if (key == sf::Keyboard::D)
 		return !inputs[3] && prevInputs[3];
+	else
+		return 0;
 }
 
 bool Player::keyState(sf::Keyboard::Key key)
@@ -178,6 +180,8 @@ bool Player::keyState(sf::Keyboard::Key key)
 		return inputs[2];
 	else if (key == sf::Keyboard::D)
 		return inputs[3];
+	else
+		return 0;
 }
 
 bool Player::keyPressed(sf::Keyboard::Key key)
@@ -190,6 +194,8 @@ bool Player::keyPressed(sf::Keyboard::Key key)
 		return inputs[2] && !prevInputs[2];
 	else if (key == sf::Keyboard::D)
 		return inputs[3] && !prevInputs[3];
+	else
+		return 0;
 }
 
 std::pair<bool, float> Player::hasGround()
@@ -201,13 +207,13 @@ std::pair<bool, float> Player::hasGround()
 		checkedTile.x = std::min(checkedTile.x, bottomRight.x);
 		int tileIndexX = map->getMapTileXAtPoint(checkedTile.x);
 		int tileIndexY = map->getMapTileYAtPoint(checkedTile.y);
-		float groundY = tileIndexY * 16;
+		float groundY = tileIndexY * 16.f;
 		if (map->isGround(tileIndexX, tileIndexY))
 			return { true, groundY };
 		if (checkedTile.x >= bottomRight.x)
 			break;
 	}
-	return { false, -1 };
+	return { false, -1.f };
 }
 
 std::pair<bool, float> Player::hasCeiling()
@@ -219,47 +225,47 @@ std::pair<bool, float> Player::hasCeiling()
 		checkedTile.x = std::min(checkedTile.x, topRight.x);
 		int tileIndexX = map->getMapTileXAtPoint(checkedTile.x);
 		int tileIndexY = map->getMapTileYAtPoint(checkedTile.y);
-		float ceilingY = tileIndexY * 16 + 16;
+		float ceilingY = tileIndexY * 16.f + 16.f;
 		if (map->isGround(tileIndexX, tileIndexY))
 			return { true, ceilingY };
 		if (checkedTile.x >= topRight.x)
 			break;
 	}
-	return { false, -1 };
+	return { false, -1.f };
 }
 
 std::pair<bool, float> Player::hasLeftWall()
 {
 	sf::Vector2f topLeft = sf::Vector2f(position.x - halfSize.x - 2.f, position.y - halfSize.y + 2.f);
-	sf::Vector2f bottomLeft = sf::Vector2f(position.x - halfSize.x - 2.f, position.y + halfSize.y + 2.f);
+	sf::Vector2f bottomLeft = sf::Vector2f(position.x - halfSize.x - 2.f, position.y + halfSize.y - 2.f);
 	for (sf::Vector2f checkedTile = topLeft; ; checkedTile.y += 16)
 	{
-		checkedTile.y = std::min(checkedTile.y, topLeft.y);
+		checkedTile.y = std::min(checkedTile.y, bottomLeft.y);
 		int tileIndexX = map->getMapTileXAtPoint(checkedTile.x);
 		int tileIndexY = map->getMapTileYAtPoint(checkedTile.y);
-		float wallX = tileIndexX * 16 + 16;
+		float wallX = tileIndexX * 16.f + 16.f;
 		if (map->isGround(tileIndexX, tileIndexY))
 			return { true, wallX };
-		if (checkedTile.y >= topLeft.y)
+		if (checkedTile.y >= bottomLeft.y)
 			break;
 	}
-	return { false, -1 };
+	return { false, -1.f };
 }
 
 std::pair<bool, float> Player::hasRightWall()
 {
 	sf::Vector2f topRight = sf::Vector2f(position.x + halfSize.x + 2.f, position.y - halfSize.y + 2.f);
-	sf::Vector2f bottomRight = sf::Vector2f(position.x + halfSize.x + 2.f, position.y + halfSize.y + 2.f);
+	sf::Vector2f bottomRight = sf::Vector2f(position.x + halfSize.x + 2.f, position.y + halfSize.y - 2.f);
 	for (sf::Vector2f checkedTile = topRight; ; checkedTile.y += 16)
 	{
-		checkedTile.y = std::min(checkedTile.y, topRight.y);
+		checkedTile.y = std::min(checkedTile.y, bottomRight.y);
 		int tileIndexX = map->getMapTileXAtPoint(checkedTile.x);
 		int tileIndexY = map->getMapTileYAtPoint(checkedTile.y);
-		float wallX = tileIndexX * 16;
+		float wallX = tileIndexX * 16.f;
 		if (map->isGround(tileIndexX, tileIndexY))
 			return { true, wallX };
-		if (checkedTile.y >= topRight.y)
+		if (checkedTile.y >= bottomRight.y)
 			break;
 	}
-	return { false, -1 };
+	return { false, -1.f };
 }
