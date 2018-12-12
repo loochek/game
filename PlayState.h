@@ -1,9 +1,12 @@
 #pragma once
 
+#include <queue>
+
 #include "BaseState.h"
 #include "ResourceManager.h"
 #include "Player.h"
 #include "TiledMap.h"
+#include "Bullet.h"
 
 class PlayState : public BaseState
 {
@@ -13,6 +16,8 @@ public:
 
 	void update(sf::Time frameTime);
 	void draw();
+
+	std::deque<Bullet*> bullets;
 
 	Player player = 0;
 	TiledMap *map;
