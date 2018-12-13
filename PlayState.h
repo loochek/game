@@ -19,6 +19,8 @@ public:
 
 	std::deque<Bullet*> bullets;
 
+	sf::View view;
+
 	Player player = 0;
 	TiledMap *map;
 };

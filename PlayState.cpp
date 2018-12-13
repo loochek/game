@@ -6,6 +6,8 @@ PlayState::PlayState(Game* game) : BaseState(game)
 	std::cout << "PlayState()\n";
 	map = ResourceManager::getMap("test");
 	player = Player(map);
+	view.setCenter(player.position);
+	view.setSize(854, 480);
 }
 
 PlayState::~PlayState()
@@ -17,7 +19,8 @@ void PlayState::update(sf::Time frameTime)
 {
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 	{
-		sf::Vector2f dir = sf::Vector2f(sf::Mouse::getPosition(game->window)) - player.position;
+		sf::Vector2i pixelPos = sf::Mouse::getPosition(game->window);
+		sf::Vector2f dir = game->window.mapPixelToCoords(pixelPos) - player.position;
 		float length = sqrt(dir.x * dir.x + dir.y * dir.y);
 		Bullet *bul = new Bullet(map, player.position, sf::Vector2f(dir.x / length * 1000, dir.y / length * 1000));
 		bullets.push_back(bul);
@@ -27,10 +30,16 @@ void PlayState::update(sf::Time frameTime)
 		i->update(frameTime);
 	while (!bullets.empty() && bullets.front()->dead)
 		bullets.pop_front();
+	float lerp = 3.f;
+	sf::Vector2f viewPos = view.getCenter();
+	viewPos.x += (player.position.x - viewPos.x) * lerp * frameTime.asSeconds();
+	viewPos.y += (player.position.y - viewPos.y) * lerp * frameTime.asSeconds();
+	view.setCenter(viewPos);
 }
 
 void PlayState::draw()
 {
+	game->window.setView(view);
 	map->draw(game->window);
 	game->window.draw(player);
 	for (Bullet *i : bullets)

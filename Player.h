@@ -12,6 +12,7 @@ class Player : public PhysicObject, public AnimatedSprite
 {
 public:
 	Player(TiledMap *map);
+	Player(TiledMap *map, sf::Keyboard::Key leftKey, sf::Keyboard::Key rightKey, sf::Keyboard::Key jumpKey);
 	~Player();
 
 	float walkSpeed = 100.0f;
@@ -35,12 +36,16 @@ public:
 
 	bool orientation = 0; // 0-right, 1-left
 
-	bool inputs[4];
-	bool prevInputs[4];
+	bool inputs[3];
+	bool prevInputs[3];
 
 	bool keyReleased(sf::Keyboard::Key key);
 	bool keyState(sf::Keyboard::Key key);
 	bool keyPressed(sf::Keyboard::Key key);
+
+	sf::Keyboard::Key leftKey;
+	sf::Keyboard::Key rightKey;
+	sf::Keyboard::Key jumpKey;
 
 	void update(sf::Time delta);
 	void checkCollisions();

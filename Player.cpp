@@ -10,6 +10,24 @@ Player::Player(TiledMap *map) : PhysicObject(map)
 	setOrigin(halfSize);
 	speed = sf::Vector2f(0, 0);
 	onGround = false;
+	leftKey = sf::Keyboard::A;
+	rightKey = sf::Keyboard::D;
+	jumpKey = sf::Keyboard::W;
+}
+
+Player::Player(TiledMap * map, sf::Keyboard::Key left, sf::Keyboard::Key right, sf::Keyboard::Key jump) : PhysicObject(map)
+{
+	scale(-1, 1);
+	setAnimation(*ResourceManager::getAnimation("playerWalk"));
+	position = sf::Vector2f(17, 17);
+	setFrameTime(sf::seconds(0.05));
+	halfSize = sf::Vector2f(getLocalBounds().width / 2.f, getLocalBounds().height / 2.f);
+	setOrigin(halfSize);
+	speed = sf::Vector2f(0, 0);
+	onGround = false;
+	leftKey = left;
+	rightKey = right;
+	jumpKey = jump;
 }
 
 Player::~Player()
@@ -18,10 +36,15 @@ Player::~Player()
 
 void Player::update(sf::Time delta)
 {
-	inputs[0] = sf::Keyboard::isKeyPressed(sf::Keyboard::W);
-	inputs[1] = sf::Keyboard::isKeyPressed(sf::Keyboard::A);
-	inputs[2] = sf::Keyboard::isKeyPressed(sf::Keyboard::S);
-	inputs[3] = sf::Keyboard::isKeyPressed(sf::Keyboard::D);
+	oldPosition = position;
+	oldSpeed = speed;
+	wasOnGround = onGround;
+	pushedRightWall = pushesRightWall;
+	pushedLeftWall = pushesLeftWall;
+	wasAtCeiling = atCeiling;
+	inputs[0] = sf::Keyboard::isKeyPressed(jumpKey);
+	inputs[1] = sf::Keyboard::isKeyPressed(leftKey);
+	inputs[2] = sf::Keyboard::isKeyPressed(rightKey);
 	switch (currentState)
 	{
 	case stay:
@@ -33,15 +56,15 @@ void Player::update(sf::Time delta)
 			currentState = jump;
 			break;
 		}
-		if (keyState(sf::Keyboard::A) != keyState(sf::Keyboard::D))
+		if (keyState(leftKey) != keyState(rightKey))
 		{
-			if (keyState(sf::Keyboard::A))
+			if (keyState(leftKey))
 			{
 				if (!orientation)
 					scale(-1, 1);
 				orientation = 1;
 			}
-			else if (keyState(sf::Keyboard::D))
+			else if (keyState(rightKey))
 			{
 				if (orientation)
 					scale(-1, 1);
@@ -49,7 +72,7 @@ void Player::update(sf::Time delta)
 			}	
 			currentState = walk;
 		}
-		else if (keyState(sf::Keyboard::W))
+		else if (keyState(jumpKey))
 		{
 			speed.y = -jumpSpeed;
 			currentState = jump;
@@ -59,27 +82,27 @@ void Player::update(sf::Time delta)
 	case walk:
 	{
 		play(*ResourceManager::getAnimation("playerWalk"));
-		if (keyState(sf::Keyboard::A) == keyState(sf::Keyboard::D))
+		if (keyState(leftKey) == keyState(rightKey))
 		{
 			currentState = stay;
 			speed = sf::Vector2f(0, 0);
 			break;
 		}
-		else if (keyState(sf::Keyboard::D))
+		else if (keyState(rightKey))
 		{
 			if (orientation)
 				scale(-1, 1);
 			orientation = 0;
 			speed.x = walkSpeed;
 		}
-		else if (keyState(sf::Keyboard::A))
+		else if (keyState(leftKey))
 		{
 			if (!orientation)
 				scale(-1, 1);
 			orientation = 1;
 			speed.x = -walkSpeed;
 		}
-		if (keyState(sf::Keyboard::W))
+		if (keyState(jumpKey))
 		{
 			speed.y = -jumpSpeed;
 			currentState = jump;
@@ -96,18 +119,18 @@ void Player::update(sf::Time delta)
 	{
 		play(*ResourceManager::getAnimation("playerJump"));
 		speed.y += gravity * delta.asSeconds();
-		if (keyState(sf::Keyboard::A) == keyState(sf::Keyboard::D))
+		if (keyState(leftKey) == keyState(rightKey))
 		{
 			speed.x = 0;
 		}
-		else if (keyState(sf::Keyboard::D))
+		else if (keyState(rightKey))
 		{
 			if (orientation)
 				scale(-1, 1);
 			orientation = 0;
 			speed.x = walkSpeed;
 		}
-		else if (keyState(sf::Keyboard::A))
+		else if (keyState(leftKey))
 		{
 			if (!orientation)
 				scale(-1, 1);
@@ -116,7 +139,7 @@ void Player::update(sf::Time delta)
 		}
 		if (onGround)
 		{
-			if (keyState(sf::Keyboard::A) == keyState(sf::Keyboard::D))
+			if (keyState(leftKey) == keyState(rightKey))
 			{
 				currentState = stay;
 				speed = sf::Vector2f(0, 0);
@@ -132,13 +155,7 @@ void Player::update(sf::Time delta)
 	};
 	updatePhysics(delta);
 	checkCollisions();
-	oldPosition = position;
-	oldSpeed = speed;
-	wasOnGround = onGround;
-	pushedRightWall = pushesRightWall;
-	pushedLeftWall = pushesLeftWall;
-	wasAtCeiling = atCeiling;
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 3; i++)
 		prevInputs[i] = inputs[i];
 	setPosition(position);
 	updateAnimation(delta);
@@ -188,42 +205,36 @@ void Player::checkCollisions()
 
 bool Player::keyReleased(sf::Keyboard::Key key)
 {
-	if (key == sf::Keyboard::W)
+	if (key == jumpKey)
 		return !inputs[0] && prevInputs[0];
-	else if (key == sf::Keyboard::A)
+	else if (key == leftKey)
 		return !inputs[1] && prevInputs[1];
-	else if (key == sf::Keyboard::S)
+	else if (key == rightKey)
 		return !inputs[2] && prevInputs[2];
-	else if (key == sf::Keyboard::D)
-		return !inputs[3] && prevInputs[3];
 	else
 		return 0;
 }
 
 bool Player::keyState(sf::Keyboard::Key key)
 {
-	if (key == sf::Keyboard::W)
+	if (key == jumpKey)
 		return inputs[0];
-	else if (key == sf::Keyboard::A)
+	else if (key == leftKey)
 		return inputs[1];
-	else if (key == sf::Keyboard::S)
+	else if (key == rightKey)
 		return inputs[2];
-	else if (key == sf::Keyboard::D)
-		return inputs[3];
 	else
 		return 0;
 }
 
 bool Player::keyPressed(sf::Keyboard::Key key)
 {
-	if (key == sf::Keyboard::W)
+	if (key == jumpKey)
 		return inputs[0] && !prevInputs[0];
-	else if (key == sf::Keyboard::A)
+	else if (key == leftKey)
 		return inputs[1] && !prevInputs[1];
-	else if (key == sf::Keyboard::S)
+	else if (key == rightKey)
 		return inputs[2] && !prevInputs[2];
-	else if (key == sf::Keyboard::D)
-		return inputs[3] && !prevInputs[3];
 	else
 		return 0;
 }
