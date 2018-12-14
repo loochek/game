@@ -21,6 +21,6 @@ public:
 
 	sf::View view;
 
-	Player player = 0;
+	Player *player;
 	TiledMap *map;
 };

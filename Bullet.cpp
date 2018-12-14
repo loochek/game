@@ -1,10 +1,9 @@
 #include "Bullet.h"
 
-Bullet::Bullet(TiledMap *map, sf::Vector2f position, sf::Vector2f speed) : PhysicObject(map)
+Bullet::Bullet(TiledMap *map, sf::Vector2f position, sf::Vector2f speed) : PhysicObject(map, AABB(sf::Vector2f(2.5f, 2.5f), sf::Vector2f(0, 0)))
 {
 	setSize(sf::Vector2f(5, 5));
-	halfSize = sf::Vector2f(getLocalBounds().width / 2.f, getLocalBounds().height / 2.f);
-	setOrigin(halfSize);
+	setOrigin(getLocalBounds().width / 2.f, getLocalBounds().height / 2.f);
 	this->position = position;
 	this->speed = speed;
 	setPosition(position);
@@ -37,8 +36,9 @@ bool Bullet::checkCollisions()
 
 bool Bullet::hasGround()
 {
-	sf::Vector2f bottomLeft = sf::Vector2f(position.x - halfSize.x + 2.f, position.y + halfSize.y + 2.f);
-	sf::Vector2f bottomRight = sf::Vector2f(position.x + halfSize.x - 2.f, position.y + halfSize.y + 2.f);
+	sf::Vector2f center = position + aabb.offset;
+	sf::Vector2f bottomLeft = sf::Vector2f(center.x - aabb.halfSize.x + 2.f, center.y + aabb.halfSize.y + 2.f);
+	sf::Vector2f bottomRight = sf::Vector2f(center.x + aabb.halfSize.x - 2.f, center.y + aabb.halfSize.y + 2.f);
 	for (sf::Vector2f checkedTile = bottomLeft; ; checkedTile.x += 16)
 	{
 		checkedTile.x = std::min(checkedTile.x, bottomRight.x);
@@ -54,8 +54,9 @@ bool Bullet::hasGround()
 
 bool Bullet::hasCeiling()
 {
-	sf::Vector2f topLeft = sf::Vector2f(position.x - halfSize.x + 2.f, position.y - halfSize.y + 2.f);
-	sf::Vector2f topRight = sf::Vector2f(position.x + halfSize.x - 2.f, position.y - halfSize.y + 2.f);
+	sf::Vector2f center = position + aabb.offset;
+	sf::Vector2f topLeft = sf::Vector2f(center.x - aabb.halfSize.x + 2.f, center.y - aabb.halfSize.y + 2.f);
+	sf::Vector2f topRight = sf::Vector2f(center.x + aabb.halfSize.x - 2.f, center.y - aabb.halfSize.y + 2.f);
 	for (sf::Vector2f checkedTile = topLeft; ; checkedTile.x += 16)
 	{
 		checkedTile.x = std::min(checkedTile.x, topRight.x);
@@ -71,8 +72,9 @@ bool Bullet::hasCeiling()
 
 bool Bullet::hasLeftWall()
 {
-	sf::Vector2f topLeft = sf::Vector2f(position.x - halfSize.x - 2.f, position.y - halfSize.y + 2.f);
-	sf::Vector2f bottomLeft = sf::Vector2f(position.x - halfSize.x - 2.f, position.y + halfSize.y - 2.f);
+	sf::Vector2f center = position + aabb.offset;
+	sf::Vector2f topLeft = sf::Vector2f(center.x - aabb.halfSize.x - 2.f, center.y - aabb.halfSize.y + 2.f);
+	sf::Vector2f bottomLeft = sf::Vector2f(center.y - aabb.halfSize.y - 2.f, center.y + aabb.halfSize.y - 2.f);
 	for (sf::Vector2f checkedTile = topLeft; ; checkedTile.y += 16)
 	{
 		checkedTile.y = std::min(checkedTile.y, bottomLeft.y);
@@ -88,8 +90,9 @@ bool Bullet::hasLeftWall()
 
 bool Bullet::hasRightWall()
 {
-	sf::Vector2f topRight = sf::Vector2f(position.x + halfSize.x + 2.f, position.y - halfSize.y + 2.f);
-	sf::Vector2f bottomRight = sf::Vector2f(position.x + halfSize.x + 2.f, position.y + halfSize.y - 2.f);
+	sf::Vector2f center = position + aabb.offset;
+	sf::Vector2f topRight = sf::Vector2f(center.x + aabb.halfSize.x + 2.f, center.y - aabb.halfSize.y + 2.f);
+	sf::Vector2f bottomRight = sf::Vector2f(center.x + aabb.halfSize.x + 2.f, center.y + aabb.halfSize.y - 2.f);
 	for (sf::Vector2f checkedTile = topRight; ; checkedTile.y += 16)
 	{
 		checkedTile.y = std::min(checkedTile.y, bottomRight.y);

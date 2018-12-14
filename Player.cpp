@@ -1,13 +1,12 @@
 #include "Player.h"
 
-Player::Player(TiledMap *map) : PhysicObject(map)
+Player::Player(TiledMap *map, AABB aabb) : PhysicObject(map, aabb)
 {
 	scale(-1, 1);
 	setAnimation(*ResourceManager::getAnimation("playerWalk"));
 	position = sf::Vector2f(17, 17);
 	setFrameTime(sf::seconds(0.05));
-	halfSize = sf::Vector2f(getLocalBounds().width / 2.f, getLocalBounds().height / 2.f);
-	setOrigin(halfSize);
+	setOrigin(getLocalBounds().width / 2.f, getLocalBounds().height / 2.f);
 	speed = sf::Vector2f(0, 0);
 	onGround = false;
 	leftKey = sf::Keyboard::A;
@@ -15,14 +14,13 @@ Player::Player(TiledMap *map) : PhysicObject(map)
 	jumpKey = sf::Keyboard::W;
 }
 
-Player::Player(TiledMap * map, sf::Keyboard::Key left, sf::Keyboard::Key right, sf::Keyboard::Key jump) : PhysicObject(map)
+Player::Player(TiledMap * map, sf::Keyboard::Key left, sf::Keyboard::Key right, sf::Keyboard::Key jump) : PhysicObject(map, aabb)
 {
 	scale(-1, 1);
 	setAnimation(*ResourceManager::getAnimation("playerWalk"));
 	position = sf::Vector2f(17, 17);
 	setFrameTime(sf::seconds(0.05));
-	halfSize = sf::Vector2f(getLocalBounds().width / 2.f, getLocalBounds().height / 2.f);
-	setOrigin(halfSize);
+	setOrigin(getLocalBounds().width / 2.f, getLocalBounds().height / 2.f);
 	speed = sf::Vector2f(0, 0);
 	onGround = false;
 	leftKey = left;
@@ -166,9 +164,9 @@ void Player::checkCollisions()
 	auto check3 = hasLeftWall();
 	if (speed.x <= 0.0f && check3.first)
 	{
-		if (oldPosition.x - halfSize.x >= check3.second)
+		if (oldPosition.x - aabb.halfSize.x + aabb.offset.x >= check3.second)
 		{
-			position.x = check3.second + halfSize.x;
+			position.x = check3.second + aabb.halfSize.x - aabb.offset.x;
 			pushesLeftWall = true;
 		}
 		speed.x = std::max(speed.x, 0.0f);
@@ -176,9 +174,9 @@ void Player::checkCollisions()
 	auto check4 = hasRightWall();
 	if (speed.x >= 0.0f && check4.first)
 	{
-		if (oldPosition.x + halfSize.x <= check4.second)
+		if (oldPosition.x + aabb.halfSize.x + aabb.offset.x <= check4.second)
 		{
-			position.x = check4.second - halfSize.x;
+			position.x = check4.second - aabb.halfSize.x - aabb.offset.x;
 			pushesRightWall = true;
 		}
 		speed.x = std::min(speed.x, 0.0f);
@@ -186,7 +184,7 @@ void Player::checkCollisions()
 	auto check = hasGround();
 	if (speed.y >= 0.0f && check.first)
 	{
-		position.y = check.second - halfSize.y;
+		position.y = check.second - aabb.halfSize.y - aabb.offset.y;
 		speed.y = 0.0f;
 		onGround = true;
 	}
@@ -195,7 +193,7 @@ void Player::checkCollisions()
 	auto check2 = hasCeiling();
 	if (speed.y <= 0.0f && check2.first)
 	{
-		position.y = check2.second + halfSize.y;
+		position.y = check2.second + aabb.halfSize.y - aabb.offset.y;
 		speed.y = 0.0f;
 		atCeiling = true;
 	}
@@ -241,8 +239,9 @@ bool Player::keyPressed(sf::Keyboard::Key key)
 
 std::pair<bool, float> Player::hasGround()
 {
-	sf::Vector2f bottomLeft = sf::Vector2f(position.x - halfSize.x + 2.f, position.y + halfSize.y + 2.f);
-	sf::Vector2f bottomRight = sf::Vector2f(position.x + halfSize.x - 2.f, position.y + halfSize.y + 2.f);
+	sf::Vector2f center = position + aabb.offset;
+	sf::Vector2f bottomLeft = sf::Vector2f(center.x - aabb.halfSize.x + 2.f, center.y + aabb.halfSize.y + 2.f);
+	sf::Vector2f bottomRight = sf::Vector2f(center.x + aabb.halfSize.x - 2.f, center.y + aabb.halfSize.y + 2.f);
 	for (sf::Vector2f checkedTile = bottomLeft; ; checkedTile.x += 16)
 	{
 		checkedTile.x = std::min(checkedTile.x, bottomRight.x);
@@ -259,8 +258,9 @@ std::pair<bool, float> Player::hasGround()
 
 std::pair<bool, float> Player::hasCeiling()
 {
-	sf::Vector2f topLeft = sf::Vector2f(position.x - halfSize.x + 2.f, position.y - halfSize.y + 2.f);
-	sf::Vector2f topRight = sf::Vector2f(position.x + halfSize.x - 2.f, position.y - halfSize.y + 2.f);
+	sf::Vector2f center = position + aabb.offset;
+	sf::Vector2f topLeft = sf::Vector2f(center.x - aabb.halfSize.x + 2.f, center.y - aabb.halfSize.y + 2.f);
+	sf::Vector2f topRight = sf::Vector2f(center.x + aabb.halfSize.x - 2.f, center.y - aabb.halfSize.y + 2.f);
 	for (sf::Vector2f checkedTile = topLeft; ; checkedTile.x += 16)
 	{
 		checkedTile.x = std::min(checkedTile.x, topRight.x);
@@ -277,8 +277,9 @@ std::pair<bool, float> Player::hasCeiling()
 
 std::pair<bool, float> Player::hasLeftWall()
 {
-	sf::Vector2f topLeft = sf::Vector2f(position.x - halfSize.x - 2.f, position.y - halfSize.y + 2.f);
-	sf::Vector2f bottomLeft = sf::Vector2f(position.x - halfSize.x - 2.f, position.y + halfSize.y - 2.f);
+	sf::Vector2f center = position + aabb.offset;
+	sf::Vector2f topLeft = sf::Vector2f(center.x - aabb.halfSize.x - 2.f, center.y - aabb.halfSize.y + 2.f);
+	sf::Vector2f bottomLeft = sf::Vector2f(center.y - aabb.halfSize.y - 2.f, center.y + aabb.halfSize.y - 2.f);
 	for (sf::Vector2f checkedTile = topLeft; ; checkedTile.y += 16)
 	{
 		checkedTile.y = std::min(checkedTile.y, bottomLeft.y);
@@ -295,8 +296,9 @@ std::pair<bool, float> Player::hasLeftWall()
 
 std::pair<bool, float> Player::hasRightWall()
 {
-	sf::Vector2f topRight = sf::Vector2f(position.x + halfSize.x + 2.f, position.y - halfSize.y + 2.f);
-	sf::Vector2f bottomRight = sf::Vector2f(position.x + halfSize.x + 2.f, position.y + halfSize.y - 2.f);
+	sf::Vector2f center = position + aabb.offset;
+	sf::Vector2f topRight = sf::Vector2f(center.x + aabb.halfSize.x + 2.f, center.y - aabb.halfSize.y + 2.f);
+	sf::Vector2f bottomRight = sf::Vector2f(center.x + aabb.halfSize.x + 2.f, center.y + aabb.halfSize.y - 2.f);
 	for (sf::Vector2f checkedTile = topRight; ; checkedTile.y += 16)
 	{
 		checkedTile.y = std::min(checkedTile.y, bottomRight.y);

@@ -11,7 +11,7 @@
 class Player : public PhysicObject, public AnimatedSprite
 {
 public:
-	Player(TiledMap *map);
+	Player(TiledMap *map, AABB aabb);
 	Player(TiledMap *map, sf::Keyboard::Key leftKey, sf::Keyboard::Key rightKey, sf::Keyboard::Key jumpKey);
 	~Player();
 

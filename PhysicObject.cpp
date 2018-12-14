@@ -1,6 +1,6 @@
 #include "PhysicObject.h"
 
-PhysicObject::PhysicObject(TiledMap *map)
+PhysicObject::PhysicObject(TiledMap *map, AABB aabb) : aabb(aabb)
 {
 	this->map = map;
 }
